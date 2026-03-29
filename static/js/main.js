@@ -1,8 +1,3 @@
-/* ============================================
-   Домашняя Бухгалтерия - Основной JavaScript
-   Файл: static/js/main.js
-   ============================================ */
-
 /**
  * Инициализация фильтрации категорий
  * Вызывается после загрузки страницы
@@ -46,7 +41,7 @@ function initCategoryFilter() {
         categorySelect.appendChild(optgroup);
     }
     
-    // Слушаем переключение типа транзакции
+    // Переключение типа транзакции
     typeRadios.forEach(radio => {
         radio.addEventListener('change', updateCategoryList);
     });
@@ -56,7 +51,7 @@ function initCategoryFilter() {
 }
 
 /**
- * Инициализация графика расходов (Chart.js)
+ * Инициализация графика расходов
  * @param {string} canvasId - ID элемента canvas
  * @param {Array} labels - Названия категорий
  * @param {Array} data - Значения расходов

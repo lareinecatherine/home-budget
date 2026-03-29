@@ -30,13 +30,13 @@ DB_PASSWORD = os.getenv('DB_PASSWORD', '')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
 
-print(f"📊 База данных: {DB_NAME}")
-print(f"👤 Пользователь: {DB_USER}")
-print(f"🌍 Хост: {DB_HOST}:{DB_PORT}")
+print(f"База данных: {DB_NAME}")
+print(f"Пользователь: {DB_USER}")
+print(f"Хост: {DB_HOST}:{DB_PORT}")
 print("=" * 50)
 
 # === ШАГ 1: Создаём базу данных (если не существует) ===
-print("\n📁 ШАГ 1: Проверка/создание базы данных...")
+print("\n ШАГ 1: Проверка/создание базы данных...")
 
 try:
     # Подключаемся к системной БД 'postgres' для создания новой
@@ -55,22 +55,22 @@ try:
     exists = cur.fetchone()
     
     if exists:
-        print(f"   ⏭️  База '{DB_NAME}' уже существует")
+        print(f" База '{DB_NAME}' уже существует")
     else:
-        print(f"   🔄 Создание базы '{DB_NAME}'...")
+        print(f" Создание базы '{DB_NAME}'...")
         cur.execute(f'CREATE DATABASE "{DB_NAME}"')
-        print(f"   ✅ База '{DB_NAME}' создана!")
+        print(f" База '{DB_NAME}' создана!")
     
     cur.close()
     conn.close()
     
 except Exception as e:
     print(f"\n❌ ОШИБКА при создании базы: {e}")
-    print("💡 Убедитесь, что PostgreSQL запущен и пароль верный")
+    print("Убедитесь, что PostgreSQL запущен и пароль верный")
     sys.exit(1)
 
 # === ШАГ 2: Создаём таблицы и заполняем данными ===
-print("\n📊 ШАГ 2: Создание таблиц и заполнение данными...")
+print("\n ШАГ 2: Создание таблиц и заполнение данными...")
 
 from datetime import date, timedelta
 from app import app, db, Category, Transaction, Budget
@@ -78,12 +78,12 @@ from app import app, db, Category, Transaction, Budget
 with app.app_context():
     try:
         # Создаём таблицы
-        print("   🔄 Создание таблиц...")
+        print(" Создание таблиц...")
         db.create_all()
-        print("   ✅ Таблицы созданы")
+        print(" Таблицы созданы")
         
         # Категории
-        print("   🔄 Добавление категорий...")
+        print(" Добавление категорий...")
         default_categories = [
             {'name': 'Зарплата', 'type': 'income', 'icon': 'bi-cash-coin'},
             {'name': 'Еда', 'type': 'expense', 'icon': 'bi-cart'},
@@ -106,7 +106,7 @@ with app.app_context():
             categories[cat_data['name']] = cat
         
         # Транзакции
-        print("   🔄 Добавление транзакций...")
+        print(" Добавление транзакций...")
         sample_transactions = [
             {'amount': 50000, 'category': 'Зарплата', 'type': 'income', 'date': date.today().replace(day=1), 'comment': 'Аванс'},
             {'amount': 30000, 'category': 'Зарплата', 'type': 'income', 'date': date.today().replace(day=15), 'comment': 'Зарплата'},
@@ -137,7 +137,7 @@ with app.app_context():
                 db.session.add(t)
         
         # Бюджеты
-        print("   🔄 Установка бюджетов...")
+        print(" Установка бюджетов...")
         now = date.today()
         sample_budgets = [
             {'category': 'Еда', 'limit': 10000},
@@ -161,20 +161,20 @@ with app.app_context():
                     year=now.year
                 )
                 db.session.add(budget)
-                print(f"      ➕ {b_data['category']}: {b_data['limit']} ₽")
+                print(f" {b_data['category']}: {b_data['limit']} ₽")
         
         db.session.commit()
         
         print("\n" + "=" * 50)
-        print("🎉 ГОТОВО! Проект полностью инициализирован")
+        print(" Успех. Проект полностью инициализирован")
         print("=" * 50)
-        print(f"📊 Статистика:")
+        print(f" Статистика:")
         print(f"   • Категорий: {Category.query.count()}")
         print(f"   • Транзакций: {Transaction.query.count()}")
         print(f"   • Бюджетов: {Budget.query.count()}")
-        print(f"\n🚀 Запуск приложения:")
+        print(f"\n Запуск приложения:")
         print(f"   python app.py")
-        print(f"\n🌐 Открой в браузере:")
+        print(f"\n Откройте в браузере:")
         print(f"   http://127.0.0.1:5000")
         
     except Exception as e:
