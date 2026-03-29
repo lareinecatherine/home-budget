@@ -33,7 +33,49 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Выбор периода -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="form-label mb-0 fw-bold">Период:</label>
+            </div>
+            <div class="col-auto">
+                <select name="period" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>📅 Месяц</option>
+                    <option value="year" {% if period == 'year' %}selected{% endif %}>📆 Год</option>
+                    <option value="all" {% if period == 'all' %}selected{% endif %}>∞ Всё время</option>
+                </select>
+            </div>
+            
+            {% if period == 'month' %}
+            <div class="col-auto">
+                <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                        {{ ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'][m-1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            
+            {% if period in ['month', 'year'] %}
+            <div class="col-auto">
+                <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="2025" {% if 2025 == selected_year %}selected{% endif %}>2025</option>
+                    <option value="2026" {% if 2026 == selected_year %}selected{% endif %}>2026</option>
+                    <option value="2027" {% if 2027 == selected_year %}selected{% endif %}>2027</option>
+                </select>
+            </div>
+            {% endif %}
+            
+        </form>
+    </div>
+</div>
+
         <!-- Карточки статистики -->
+    <!-- ... дальше идут карточки ... -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="card stat-card bg-success h-100">
@@ -120,6 +162,16 @@
                 </div>
 
                 <!-- Бюджеты -->
+                 <!-- Бюджеты (только для периода "месяц") -->
+{% if period == 'month' %}
+<div class="card mb-4">
+    <!-- ... содержимое бюджетов ... -->
+</div>
+{% else %}
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i> Контроль бюджетов доступен только в режиме "Месяц"
+</div>
+{% endif %}
                 <div class="card mb-4">
                     <div class="card-header"><h5 class="mb-0"><i class="bi bi-speedometer2"></i> Бюджеты</h5></div>
                     <div class="card-body">

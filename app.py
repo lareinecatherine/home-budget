@@ -79,7 +79,7 @@ def get_budget_status(spent, limit):
     if percent >= 100:
         return 'danger', min(percent, 100), f'Перерасход: +{percent-100:.0f}%'
     elif percent >= 80:
-        return 'warning', percent, f'Внимание: {100-percent:.0f}% осталось'
+        return 'warning', percent, f'Внимание: {100-percent:.0f}% осталось до превышения лимита'
     else:
         return 'success', percent, f'Осталось: {limit-spent:.0f} ₽'
 
@@ -90,22 +90,57 @@ def dashboard():
     today = date.today().isoformat()
     now = datetime.now()
     
+    # === ПОЛУЧАЕМ ВЫБРАННЫЙ ПЕРИОД ===
+    period = request.args.get('period', 'month')  # month, year, all
+    selected_month = request.args.get('month', now.month, type=int)
+    selected_year = request.args.get('year', now.year, type=int)
+    
+    # === ОПРЕДЕЛЯЕМ ДАТЫ ДЛЯ ФИЛЬТРАЦИИ ===
+    if period == 'month':
+        filter_month = selected_month
+        filter_year = selected_year
+        period_label = f"{get_month_name(filter_month)} {filter_year}"
+    elif period == 'year':
+        filter_month = None
+        filter_year = selected_year
+        period_label = f"{filter_year} год"
+    else:  # all
+        filter_month = None
+        filter_year = None
+        period_label = "За всё время"
+    
+    # === ПОЛУЧАЕМ ВСЕ ТРАНЗАКЦИИ (для таблицы) ===
     transactions = Transaction.query.order_by(Transaction.transaction_date.desc()).all()
     
-    income = sum(t.amount for t in transactions if t.type == 'income')
-    expenses = sum(t.amount for t in transactions if t.type == 'expense')
+    # === ФИЛЬТРУЕМ ТРАНЗАКЦИИ ДЛЯ СТАТИСТИКИ ===
+    filtered_transactions = []
+    for t in transactions:
+        if period == 'month':
+            if t.transaction_date.month == filter_month and t.transaction_date.year == filter_year:
+                filtered_transactions.append(t)
+        elif period == 'year':
+            if t.transaction_date.year == filter_year:
+                filtered_transactions.append(t)
+        else:  # all
+            filtered_transactions.append(t)
+    
+    # === ИТОГИ ЗА ВЫБРАННЫЙ ПЕРИОД ===
+    income = sum(t.amount for t in filtered_transactions if t.type == 'income')
+    expenses = sum(t.amount for t in filtered_transactions if t.type == 'expense')
     balance = income - expenses
     
+    # === КАТЕГОРИИ ===
     categories = Category.query.all()
     expense_categories = [c for c in categories if c.type == 'expense']
     
-    budgets = get_current_month_budgets(expense_categories)
+    # === БЮДЖЕТЫ (только для периода "месяц") ===
+    budgets = get_current_month_budgets(expense_categories) if period == 'month' else {}
     budget_statuses = []
     
     for cat in expense_categories:
-        if cat.id in budgets:
+        if period == 'month' and cat.id in budgets:
             budget = budgets[cat.id]
-            spent = calculate_category_spent(cat.id, now.month, now.year)
+            spent = calculate_category_spent(cat.id, filter_month, filter_year)
             status, percent, message = get_budget_status(spent, float(budget.limit_amount))
             budget_statuses.append({
                 'category': cat,
@@ -115,6 +150,71 @@ def dashboard():
                 'status': status,
                 'message': message
             })
+    
+    # === ДАННЫЕ ДЛЯ ДИАГРАММЫ ===
+    CATEGORY_COLORS = {
+        'Еда': '#dc3545',
+        'Транспорт': '#0d6efd',
+        'Развлечения': '#6f42c1',
+        'Жильё': '#20c997',
+        'Здоровье': '#fd7e14',
+        'Подарки': '#e83e8c',
+        'Зарплата': '#198754',
+        'Другое': '#6c757d',
+    }
+    
+    chart_labels = []
+    chart_data = []
+    chart_colors = []
+    
+    for cat in expense_categories:
+        if period == 'month':
+            spent = calculate_category_spent(cat.id, filter_month, filter_year)
+        elif period == 'year':
+            spent = calculate_category_spent_year(cat.id, filter_year)
+        else:  # all
+            spent = sum(t.amount for t in cat.transactions if t.type == 'expense')
+        
+        if spent > 0:
+            chart_labels.append(cat.name)
+            chart_data.append(float(spent))
+            color = CATEGORY_COLORS.get(cat.name, f'hsl({hash(cat.name) % 360}, 70%, 50%)')
+            chart_colors.append(color)
+    
+    # === УВЕДОМЛЕНИЯ ===
+    alerts = [bs for bs in budget_statuses if bs['status'] in ['warning', 'danger']]
+    
+    return render_template('dashboard.html', 
+                         transactions=transactions,
+                         income=income,
+                         expenses=expenses,
+                         balance=balance,
+                         categories=categories,
+                         today=today,
+                         budget_statuses=budget_statuses,
+                         chart_labels=chart_labels,
+                         chart_data=chart_data,
+                         chart_colors=chart_colors,
+                         alerts=alerts,
+                         period=period,
+                         selected_month=selected_month,
+                         selected_year=selected_year,
+                         period_label=period_label)
+
+# === ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ===
+def get_month_name(month):
+    months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+              'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+    return months[month - 1]
+
+def calculate_category_spent_year(category_id, year):
+    """Считает потраченную сумму по категории за год"""
+    result = db.session.query(func.sum(Transaction.amount)).filter(
+        Transaction.category_id == category_id,
+        Transaction.type == 'expense',
+        func.extract('year', Transaction.transaction_date) == year
+    ).scalar()
+    return float(result or 0)
     
     # ПАЛИТРА ЦВЕТОВ ДЛЯ ДИАГРАММЫ
     CATEGORY_COLORS = {
@@ -168,20 +268,28 @@ def add_transaction():
         
         transaction_date = datetime.strptime(t_date, '%Y-%m-%d').date() if t_date else date.today()
         
-        # ПРОВЕРКА ЛИМИТА (АСУ)
+        # === ПРОВЕРКА ЛИМИТА ТОЛЬКО ДЛЯ ТЕКУЩЕГО МЕСЯЦА ===
+        now = datetime.now()
+        
         if t_type == 'expense':
-            category = Category.query.get(category_id)
-            now = datetime.now()
-            budget = Budget.query.filter_by(
-                category_id=category_id,
-                month=now.month,
-                year=now.year
-            ).first()
+            # Проверяем, является ли транзакция текущим месяцем
+            is_current_month = (
+                transaction_date.month == now.month and 
+                transaction_date.year == now.year
+            )
             
-            if budget:
-                spent = calculate_category_spent(category_id, now.month, now.year)
-                if spent + amount > float(budget.limit_amount):
-                    flash(f'⚠️ Внимание: Превышен лимит категории "{category.name}"!', 'warning')
+            if is_current_month:
+                category = Category.query.get(category_id)
+                budget = Budget.query.filter_by(
+                    category_id=category_id,
+                    month=now.month,
+                    year=now.year
+                ).first()
+                
+                if budget:
+                    spent = calculate_category_spent(category_id, now.month, now.year)
+                    if spent + amount > float(budget.limit_amount):
+                        flash(f'⚠️ Внимание: Превышен лимит категории "{category.name}"!', 'warning')
         
         new_transaction = Transaction(
             amount=amount,
