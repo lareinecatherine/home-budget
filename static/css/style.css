@@ -1,0 +1,127 @@
+/* ============================================
+   Домашняя Бухгалтерия - Основные стили
+   Файл: static/css/style.css
+   ============================================ */
+
+/* --- Общие стили --- */
+body { 
+    background-color: #ffffff; 
+    min-height: 100vh;
+    color: #212529;
+}
+
+/* --- Навигация --- */
+.navbar { 
+    background-color: #ffffff !important; 
+    border-bottom: 2px solid #e0e0e0;
+}
+.navbar-brand { 
+    color: #212529 !important; 
+    font-weight: 600;
+}
+
+/* --- Карточки --- */
+.card { 
+    border: 2px solid #e0e0e0; 
+    border-radius: 12px; 
+    box-shadow: none;
+    background: #ffffff;
+}
+.card-header { 
+    border-radius: 10px 10px 0 0 !important; 
+    background: #fff5ea; 
+    color: #212529;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 600;
+}
+
+/* --- Статистические карточки --- */
+.stat-card { 
+    border: 2px solid #e0e0e0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover { 
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.stat-card.bg-success { 
+    background-color: #d4edda !important; 
+    border-color: #28a745;
+}
+.stat-card.bg-danger { 
+    background-color: #f8d7da !important; 
+    border-color: #dc3545;
+}
+.stat-card.bg-info { 
+    background-color: #d1ecf1 !important; 
+    border-color: #17a2b8;
+}
+
+/* --- Таблицы --- */
+.table { 
+    border: 1px solid #e0e0e0;
+}
+.table thead { 
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+.table td, .table th { 
+    border-color: #e0e0e0;
+}
+.table-hover tbody tr:hover { 
+    background-color: #f8f9fa;
+}
+
+/* --- Кнопки --- */
+.btn-outline-danger, 
+.btn-outline-success, 
+.btn-outline-primary { 
+    border-width: 2px;
+}
+
+/* --- Формы --- */
+.form-control, .form-select { 
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+}
+.form-control:focus, .form-select:focus { 
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+/* --- Прогресс-бары --- */
+.progress { 
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    height: 24px;
+}
+.progress-bar { 
+    font-weight: 600; 
+    font-size: 0.85rem; 
+    line-height: 22px; 
+}
+
+/* --- Уведомления --- */
+.alert { 
+    border: 2px solid;
+    border-radius: 8px;
+}
+
+/* --- Бюджеты --- */
+.budget-item { 
+    padding: 12px 0; 
+    border-bottom: 1px dashed #e0e0e0; 
+}
+.budget-item:last-child { 
+    border-bottom: none; 
+}
+
+/* --- Список категорий --- */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+}
+.list-group-item:last-child {
+    border-bottom: none;
+}
