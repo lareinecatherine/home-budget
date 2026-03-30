@@ -45,6 +45,7 @@
 ## Структура проекта
 
 ```markdown
+```txt
 home-budget/
 ├── app.py                  # Основной файл приложения (Flask)
 ├── init_db.py              # Скрипт инициализации БД с тестовыми данными
@@ -59,6 +60,7 @@ home-budget/
     │   └── style.css       # Пользовательские стили
     └── js/
         └── main.js         # Клиентская логика (фильтрация, графики)
+```
 ```
 
 ---
@@ -149,6 +151,7 @@ budget = Budget.query.filter_by(
 if budget and spent + amount > float(budget.limit_amount):
     flash(f'⚠️ Превышен лимит категории "{category.name}"!', 'warning')
 ```
+
 #### Цветовая индикация
 Состояние бюджета классифицируется по трем уровням:
 
@@ -159,6 +162,7 @@ def get_budget_status(spent, limit):
     if percent >= 80: return 'warning', percent, 'Осталось мало'
     return 'success', percent, 'В норме'
 ```
+
 ### 4. Преимущества
 - Автоматизация — пользователь не отслеживает остатки вручную
 - Раннее предупреждение — сигнал при 80% лимита
@@ -212,6 +216,7 @@ def get_budget_status(spent, limit):
 ```bash
 python --version
 ```
+
 **Если Python не установлен:** Скачайте с https://www.python.org/downloads/
 - **PostgreSQL 14 или выше:**
 **Если PostgreSQL не установлен:** Скачайте с https://www.postgresql.org/download/
@@ -224,6 +229,7 @@ python --version
 git clone https://github.com/lareinecatherine/home-budget.git
 cd home-budget
 ```
+
 Если нет Git: Скачайте архив проекта через кнопку "Code → Download ZIP" на GitHub и распакуйте в удобную папку.
 
 ### 2. Создание виртуального окружения
@@ -238,6 +244,7 @@ venv\Scripts\activate
 python3 -m venv venv
 source venv/bin/activate
 ```
+
 Как проверить активацию: в начале строки терминала должно появиться (venv)
 
 ### 3. Установка зависимостей
@@ -246,11 +253,13 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
 Проверка успешной установки:
 
 ```bash
 pip list
 ```
+
 В списке должны быть: Flask, Flask-SQLAlchemy, psycopg, python-dotenv
 
 ### 4. Настройка переменных окружения
@@ -295,6 +304,7 @@ python -c "from app import app, db; print('Подключение ОК')"
 ```bash
 python app.py
 ```
+
 Ожидаемый вывод:
  * Running on http://127.0.0.1:5000
  * Debug mode: on
